@@ -67,11 +67,21 @@ class MasterViewController: UITableViewController {
         }
     }
     func answerIsValid(answer: String) ->Bool{
+        var word_ = title!.lowercaseString
+        
+        for letter in answer.characters {
+            if let pos = word_.rangeOfString(String(letter)) {
+                word_.removeAtIndex(pos.startIndex)
+            } else {
+                return false
+            }
+        }
+        
         return true
     }
     
     func answerIsUnique(answer: String) ->Bool{
-        return true
+        return !objects.contains(answer)
     }
     func answerIsReal(answer: String) ->Bool{
         return true
