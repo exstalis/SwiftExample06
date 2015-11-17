@@ -7,6 +7,7 @@
 //
 
 import UIKit
+import GameplayKit
 
 class MasterViewController: UITableViewController {
 
@@ -14,10 +15,16 @@ class MasterViewController: UITableViewController {
     var objects = [String]()
     var words = [String]()
 
-
+    override func loadView() {
+        super.loadView()
+        navigationItem.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem: .Add, target: self, action:"promptForGuess")
+        
+    }
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         loadInitialContent()
+        startGame()
     }
     func loadInitialContent()  {
         if let initialContentPath = NSBundle.mainBundle().pathForResource("start", ofType: "txt") {
@@ -30,15 +37,58 @@ class MasterViewController: UITableViewController {
             }
         }
     }
-
+    func promptForGuess(){
+        let ac = UIAlertController(title: "Your guess?", message: nil, preferredStyle: .Alert)
+        ac.addTextFieldWithConfigurationHandler(nil)
+//        use unowned to avoid strong references
+        let submitAction = UIAlertAction(title: "hit", style: .Default) { [unowned self, ac] action in
+            let guess = ac.textFields![0]
+//            external call for submitAnswer(), controller's method is called w. self.
+            
+            self.submitAnswer(guess.text!)
+            
+        }
+        ac.addAction(submitAction)
+        presentViewController(ac, animated: true, completion: nil)
+        
+    }
+    func submitAnswer(answer: String){
+        let answer_ = answer.lowercaseString
+        
+        if answerIsValid(answer_) {
+            if answerIsUnique(answer_) {
+                if answerIsReal(answer_) {
+                    objects.insert(answer, atIndex: 0)
+                    
+                    let indexPath = NSIndexPath(forRow: 0, inSection: 0)
+                    tableView.insertRowsAtIndexPaths([indexPath], withRowAnimation: .Automatic)
+                }
+            }
+        }
+    }
+    func answerIsValid(answer: String) ->Bool{
+        return true
+    }
+    
+    func answerIsUnique(answer: String) ->Bool{
+        return true
+    }
+    func answerIsReal(answer: String) ->Bool{
+        return true
+    }
+    
     override func viewWillAppear(animated: Bool) {
         self.clearsSelectionOnViewWillAppear = self.splitViewController!.collapsed
         super.viewWillAppear(animated)
     }
 
-
-
-
+    func startGame(){
+//        we unwrap the return value because the contents of the array returns as Anyobject
+        words = GKRandomSource.sharedRandom().arrayByShufflingObjectsInArray(words) as! [String]
+        title = words[0]
+        objects.removeAll(keepCapacity: true)
+        tableView.reloadData()
+    }
     // MARK: - Table View
 
     override func numberOfSectionsInTableView(tableView: UITableView) -> Int {
